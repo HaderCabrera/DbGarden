@@ -238,10 +238,13 @@ SELECT P.codigo_pedido as codePedido, P.cliente as codeCliente, P.fecha_esperada
 FROM pedido as P
 WHERE P.fecha_entrega > P.fecha_esperada;
 
+--
 
+SELECT P.codigo_pedido as codePedido, P.cliente as codeCliente, P.fecha_esperada as fechaEsperada, P.fecha_entrega as fechaEntrega, ADDDATE(P.fecha_entrega, INTERVAL 2 DAY) as modificada
+FROM pedido as P
+WHERE ADDDATE(P.fecha_esperada, INTERVAL 2 DAY) <= P.fecha_entrega;
 
-
-
+--
 
 
 
@@ -374,11 +377,11 @@ SET codigo_jefe = NULL, puesto = 5
 WHERE codigo_empleado = 1;
 
 UPDATE empleado
-SET codigo_jefe = 7,
+SET codigo_jefe = 7
 WHERE codigo_empleado = 13;
 
 UPDATE empleado
-SET codigo_jefe = 7,
+SET codigo_jefe = 7
 WHERE codigo_empleado = 15;
 
 
@@ -429,6 +432,10 @@ INSERT INTO estadoPedido (estado) VALUES
 ('Cancelado'),
 ('Pendiente de pago');
 
+UPDATE estadoPedido
+SET estado = 'Rechazado'
+WHERE codigo_estado = 4;
+
 
 INSERT INTO pago (id_transaccion, forma_pago, fecha_pago, total, cliente) VALUES
 ('TRANS031', 'Tarjeta de crédito', '2007-01-01', 150.50, 1),  -- Cliente 1
@@ -476,3 +483,23 @@ INSERT INTO pedido (fecha_pedido, fecha_esperada, fecha_entrega, comentarios, es
 ('2024-05-19', '2024-05-23', '2024-05-24', 'Pedido entregado antes de la fecha esperada.', 3, 19),  -- Cliente 19, Estado "Entregado"
 ('2024-05-20', '2024-05-24', NULL, 'Pedido aún en proceso de entrega.', 1, 20),  -- Cliente 20, Estado "En proceso"
 ('2024-05-21', '2024-05-25', '2024-05-26', 'Pedido con retraso en la entrega.', 3, 1);  -- Cliente 1, Estado "Ent
+
+UPDATE pedido
+SET fecha_pedido = '2009-05-20', fecha_esperada = '2009-05-25', fecha_entrega = '2009-05-24'
+WHERE codigo_pedido = 2;
+
+UPDATE pedido
+SET fecha_esperada = '2024-05-20'
+WHERE codigo_pedido = 19;
+
+UPDATE pedido
+SET fecha_esperada = '2024-05-14'
+WHERE codigo_pedido = 13;
+
+UPDATE pedido
+SET estado = 4
+WHERE codigo_pedido = 4;
+
+UPDATE pedido
+SET estado = 4
+WHERE codigo_pedido = 2;
