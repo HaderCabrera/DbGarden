@@ -21,12 +21,16 @@ CREATE TABLE proveedor (
 );
 
 CREATE TABLE gama_producto (
+    codigo_gama VARCHAR(50),
     gama VARCHAR(50),
     descripcion_texto TEXT,
     descripcion_html TEXT,
     imagen VARCHAR(256),
-    CONSTRAINT PK_gama_producto PRIMARY KEY (gama)
+    CONSTRAINT PK_codigo_gama PRIMARY KEY (codigo_gama)
 );
+
+drop table producto;
+drop table detalle_pedido;
 
 CREATE TABLE producto (
     codigo_producto VARCHAR(15),
@@ -39,7 +43,7 @@ CREATE TABLE producto (
     gama VARCHAR(50),
     proveedor INT,
     CONSTRAINT PK_codigo_producto PRIMARY KEY (codigo_producto),
-    CONSTRAINT FK_gama_producto FOREIGN KEY (gama) REFERENCES gama_producto(gama), 
+    CONSTRAINT FK_gama_producto FOREIGN KEY (gama) REFERENCES gama_producto(codigo_gama), 
     CONSTRAINT FK_codigo_proveedor FOREIGN KEY (proveedor) REFERENCES proveedor(codigo_proveedor)
 );
 
@@ -246,20 +250,71 @@ WHERE ADDDATE(P.fecha_esperada, INTERVAL 2 DAY) <= P.fecha_entrega;
 
 --
 
+SELECT P.codigo_pedido as codePedido, P.cliente as codeCliente, P.fecha_esperada as fechaEsperada, P.fecha_entrega as fechaEntrega
+FROM pedido as P
+WHERE DATE_FORMAT(P.fecha_entrega, '%m')= 01;
 
+--
 
+SELECT *
+FROM pago as PP
+WHERE SUBSTRING_INDEX(PP.fecha_pago, '-', 1) = 2008 AND PP.forma_pago = 'Paypal'
+ORDER BY PP.total desc;
 
+--
 
+SELECT DISTINCT P.forma_pago AS 'Forma de pago'
+FROM pago as P;
 
+--
 
+SELECT P.nombre AS Producto, P.precio_venta AS Precio, GP.gama as Gama
+FROM producto AS P
+INNER JOIN gama_producto as GP ON P.gama = GP.codigo_gama
+WHERE GP.gama = 'Ornamentales'
+ORDER BY P.precio_venta desc;
 
+--
+SELECT C.nombre_cliente as Cliente, CC.nombre_ciudad as Ciudad, C.codigo_empleado_rep_ventas as Representante
+FROM cliente as C
+INNER JOIN ciudad as CC ON C.ciudad = CC.codigo_ciudad
+WHERE CC.nombre_ciudad = 'Madrid' AND C.codigo_empleado_rep_ventas = 10; 
 
+--
+SELECT CC.nombre_cliente as Cliente, CONCAT(E.nombre, ' ', E.apellido1 , ' ', E.apellido2) AS  'Representante de ventas'
+FROM cliente AS CC
+INNER JOIN empleado as E ON CC.codigo_empleado_rep_ventas = E.codigo_empleado;
 
+--
+SELECT CC.nombre_cliente as Cliente, CONCAT(E.nombre, ' ', E.apellido1 , ' ', E.apellido2) AS  'Representante de ventas', PP.fecha_pago as Pago
+FROM cliente AS CC
+INNER JOIN empleado as E ON CC.codigo_empleado_rep_ventas = E.codigo_empleado
+LEFT JOIN pago AS PP ON CC.codigo_cliente = PP.cliente
+WHERE PP.cliente IS NULL;
 
+--
+SELECT CC.nombre_cliente as Cliente, CONCAT(E.nombre, ' ', E.apellido1 , ' ', E.apellido2) AS  'Representante de ventas',
+       C.nombre_ciudad AS 'Ubicacion oficina'
+FROM cliente AS CC
+INNER JOIN empleado as E ON CC.codigo_empleado_rep_ventas = E.codigo_empleado
+LEFT JOIN pago AS PP ON CC.codigo_cliente = PP.cliente
+INNER JOIN oficina AS O ON E.codigo_oficina = O.codigo_oficina
+INNER JOIN ciudad AS C ON O.ciudad = C.codigo_ciudad
+WHERE PP.cliente IS NULL;
 
+--
+SELECT CC.nombre_cliente as Cliente, O.codigo_oficina as Oficina, C.nombre_ciudad as Ciudad,
+       CONCAT(ID.linea_direccion1, ' ', ID.linea_direccion2 , ' CP:', ID.codigo_postal) AS  'Direccion oficina'
+FROM cliente AS CC
+INNER JOIN ciudad AS C ON CC.ciudad = C.codigo_ciudad
+INNER JOIN oficina AS O ON C.codigo_ciudad = O.ciudad
+INNER JOIN infoDireccion AS ID ON O.info_direccion = ID.codigo_direccion
+WHERE C.nombre_ciudad = 'Fuenlabrada';
 
-
-
+--
+SELECT
+FROM cliente AS CC
+INNER JOIN 
 
 -- INSERTS
 
@@ -303,6 +358,9 @@ INSERT INTO ciudad (nombre_ciudad, region) VALUES
 ('Ámsterdam', 10),    -- Holanda del Norte, Países Bajos
 ('Sevilla', 1);   -- Andalucía, España
 
+INSERT INTO ciudad (nombre_ciudad, region) VALUES 
+('Fuenlabrada', 3);
+
 -- Inserciones para la tabla 'infoDireccion'
 INSERT INTO infoDireccion (codigo_direccion, linea_direccion1, linea_direccion2, codigo_postal) VALUES 
 ('ESP001', 'Calle Mayor', 'Número 1', '28001'),  -- Madrid, España
@@ -343,7 +401,8 @@ INSERT INTO oficina (codigo_oficina, ciudad, info_direccion) VALUES
 ('OFI012', 10, 'HOL001'),  -- Ámsterdam, Países Bajos
 ('OFI013', 1, 'ESP006'),  -- Madrid, España
 ('OFI014', 2, 'ESP007'),  -- Barcelona, España
-('OFI015', 6, 'FRA003');  -- París, Francia
+('OFI015', 6, 'FRA003'),
+('OFI016', 11, 'ESP001');  -- París, Francia
 
 
 -- Inserciones para la tabla 'puesto'
@@ -405,7 +464,17 @@ INSERT INTO cliente (codigo_cliente, nombre_cliente, fax, limite_credito, ciudad
 (17, 'Antonio Ortiz', '369741258', 130000.00, 7, 'FRA002', 1),
 (18, 'Laura Herrera', '147963258', 140000.00, 8, 'GER001', 12),
 (19, 'Fernando Mendoza', '852369147', 160000.00, 9, 'ITA001', 14),
-(20, 'Beatriz Castillo', '258963741', 170000.00, 10, 'UK001', 12);
+(20, 'Beatriz Castillo', '258963741', 170000.00, 10, 'UK001', 12),
+(21, 'ELver Garcia', '13159872', 51234.00, 1, 'ESP001', 2);
+
+
+UPDATE cliente
+SET codigo_empleado_rep_ventas = 10
+WHERE codigo_cliente = 11;
+
+UPDATE cliente
+SET ciudad = 11
+WHERE codigo_cliente = 19;
 
 
 INSERT INTO telefono (codigo_telefono, telefono, cliente, oficina) VALUES
@@ -459,6 +528,13 @@ INSERT INTO pago (id_transaccion, forma_pago, fecha_pago, total, cliente) VALUES
 ('TRANS049', 'PayPal', '2011-01-01', 350.00, 19),  -- Cliente 19
 ('TRANS050', 'Tarjeta de débito', '2012-01-01', 200.75, 20);  -- Cliente 20
 
+UPDATE pago
+SET fecha_pago = '2008-01-21'
+WHERE id_transaccion = 'TRANS049';
+
+UPDATE pago
+SET fecha_pago = '2008-08-06'
+WHERE id_transaccion = 'TRANS044';
 
 
 INSERT INTO pedido (fecha_pedido, fecha_esperada, fecha_entrega, comentarios, estado, cliente) VALUES
@@ -482,7 +558,11 @@ INSERT INTO pedido (fecha_pedido, fecha_esperada, fecha_entrega, comentarios, es
 ('2024-05-18', '2024-05-22', NULL, 'Pedido aún en proceso de entrega.', 1, 18),  -- Cliente 18, Estado "En proceso"
 ('2024-05-19', '2024-05-23', '2024-05-24', 'Pedido entregado antes de la fecha esperada.', 3, 19),  -- Cliente 19, Estado "Entregado"
 ('2024-05-20', '2024-05-24', NULL, 'Pedido aún en proceso de entrega.', 1, 20),  -- Cliente 20, Estado "En proceso"
-('2024-05-21', '2024-05-25', '2024-05-26', 'Pedido con retraso en la entrega.', 3, 1);  -- Cliente 1, Estado "Ent
+('2024-05-21', '2024-05-25', '2024-05-26', 'Pedido con retraso en la entrega.', 3, 1), -- Cliente 1, Estado "Ent
+('2008-01-02', '2008-01-10', NULL, 'Pedido urgente', 1, 10),
+('2012-01-08', '2012-01-20', '2012-01-18', 'Entrega a domicilio', 3, 16),
+('2015-01-12', '2015-01-25', '2015-01-24', 'Productos de alta demanda', 2, 4);
+
 
 UPDATE pedido
 SET fecha_pedido = '2009-05-20', fecha_esperada = '2009-05-25', fecha_entrega = '2009-05-24'
@@ -503,3 +583,33 @@ WHERE codigo_pedido = 4;
 UPDATE pedido
 SET estado = 4
 WHERE codigo_pedido = 2;
+
+
+UPDATE pedido
+SET fecha_pedido = '2024-01-21', fecha_esperada = '2024-01-25', fecha_entrega = '2024-01-24' 
+WHERE codigo_pedido = 21;
+
+INSERT INTO proveedor (nombre_proveedor) VALUES 
+('Proveedor A'),
+('Proveedor B'),
+('Proveedor C'),
+('Proveedor D'),
+('Proveedor E'),
+('Proveedor F'),
+('Proveedor G'),
+('Proveedor H'),
+('Proveedor I'),
+('Proveedor J');
+
+INSERT INTO gama_producto (codigo_gama, gama, descripcion_texto, descripcion_html, imagen) VALUES 
+('GAMA001', 'Ornamentales', 'Productos decorativos para el hogar y espacios interiores.', '<p>Productos decorativos para el hogar y espacios interiores.</p>', 'ornamentales.jpg'),
+('GAMA002', 'Hogar', 'Productos para el hogar, como muebles, electrodomésticos y utensilios.', '<p>Productos para el hogar, como muebles, electrodomésticos y utensilios.</p>', 'hogar.jpg'),
+('GAMA003', 'Tecnología', 'Productos electrónicos y dispositivos tecnológicos.', '<p>Productos electrónicos y dispositivos tecnológicos.</p>', 'tecnologia.jpg'),
+('GAMA004', 'Juguetes', 'Juguetes para niños de todas las edades.', '<p>Juguetes para niños de todas las edades.</p>', 'juguetes.jpg'),
+('GAMA005', 'Joyería', 'Piezas de joyería fina y accesorios.', '<p>Piezas de joyería fina y accesorios.</p>', 'joyeria.jpg'),
+('GAMA006', 'Moda', 'Ropa, calzado y accesorios de moda para hombres y mujeres.', '<p>Ropa, calzado y accesorios de moda para hombres y mujeres.</p>', 'moda.jpg');
+
+
+
+
+
