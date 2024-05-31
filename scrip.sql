@@ -102,6 +102,7 @@ CREATE TABLE empleado (
 );
 
 
+
 CREATE TABLE cliente (
     codigo_cliente INT(11),
     nombre_cliente VARCHAR(50) NOT NULL,
@@ -115,6 +116,14 @@ CREATE TABLE cliente (
     CONSTRAINT FK_cliente_direccion FOREIGN KEY (direccion) REFERENCES infoDireccion(codigo_direccion),
     CONSTRAINT FK_cliente_empleado FOREIGN KEY (codigo_empleado_rep_ventas) REFERENCES empleado(codigo_empleado)
 );
+
+
+    SELECT CC.nombre_cliente AS Cliente, CONCAT(E.nombre, ' ', E.apellido1  , ' ', E.apellido2) AS 'Vendedor', O.codigo_oficina AS Oficina, C.nombre_ciudad AS Ciudad 
+    FROM empleado AS E 
+    INNER JOIN cliente AS CC ON E.codigo_empleado = CC.codigo_empleado_rep_ventas 
+    INNER JOIN oficina AS O ON E.codigo_oficina = O.codigo_oficina
+    INNER JOIN ciudad AS C ON O.ciudad = C.codigo_ciudad;
+
 
 CREATE TABLE contactoCliente (
     codigo_contacto INT AUTO_INCREMENT,
@@ -443,6 +452,17 @@ UPDATE empleado
 SET codigo_jefe = 7
 WHERE codigo_empleado = 15;
 
+UPDATE empleado
+SET codigo_jefe = 1
+WHERE codigo_empleado = 6;
+
+UPDATE empleado
+SET codigo_jefe = 1
+WHERE codigo_empleado = 11;
+
+UPDATE empleado
+SET codigo_jefe = 1
+WHERE codigo_empleado = 7;
 
 INSERT INTO cliente (codigo_cliente, nombre_cliente, fax, limite_credito, ciudad, direccion, codigo_empleado_rep_ventas) VALUES
 (1, 'Juan Perez', '123456789', 50000.00, 1, 'ESP001', 1),
@@ -608,6 +628,43 @@ INSERT INTO gama_producto (codigo_gama, gama, descripcion_texto, descripcion_htm
 ('GAMA004', 'Juguetes', 'Juguetes para niños de todas las edades.', '<p>Juguetes para niños de todas las edades.</p>', 'juguetes.jpg'),
 ('GAMA005', 'Joyería', 'Piezas de joyería fina y accesorios.', '<p>Piezas de joyería fina y accesorios.</p>', 'joyeria.jpg'),
 ('GAMA006', 'Moda', 'Ropa, calzado y accesorios de moda para hombres y mujeres.', '<p>Ropa, calzado y accesorios de moda para hombres y mujeres.</p>', 'moda.jpg');
+
+INSERT INTO producto (codigo_producto, nombre, dimensiones, descripcion, cantidad_en_stock, precio_venta, precio_proveedor, gama, proveedor)
+VALUES 
+('S10_1678', '1969 Harley Davidson', '48.80 x 66.90 x 26.80', 'Replica motorcycle', 7933, 48.81, 31.24, 'GAMA001', 1),
+('S10_1949', '1952 Alpine Renault', '88.60 x 25.60 x 10.90', 'Vintage car model', 7305, 98.58, 38.58, 'GAMA001', 2),
+('S10_2016', '1996 Moto Guzzi', '99.00 x 30.00 x 14.00', 'Diecast motorcycle', 6625, 68.99, 37.49, 'GAMA001', 3),
+('S10_4698', '2003 Harley-Davidson Eagle Drag Bike', '15.50 x 44.30 x 25.20', 'Drag bike model', 5582, 91.02, 37.76, 'GAMA001', 4),
+('S12_1099', '1968 Ford Mustang', '64.50 x 34.90 x 18.60', 'Classic car model', 7312, 95.34, 34.35, 'GAMA001', 5),
+('S12_1108', '2001 Ferrari Enzo', '79.20 x 39.80 x 16.20', 'Ferrari Enzo model', 3619, 95.59, 72.59, 'GAMA001', 6),
+('S12_1666', '1958 Setra Bus', '77.00 x 35.00 x 10.60', 'Vintage bus model', 1016, 77.90, 47.29, 'GAMA001', 7),
+('S12_2823', '2002 Suzuki XREO', '51.60 x 54.90 x 22.70', 'Diecast SUV', 9997, 103.42, 95.70, 'GAMA001', 8),
+('S12_3148', '1969 Corvair Monza', '67.20 x 16.30 x 32.20', 'Corvair Monza model', 6906, 89.14, 55.09, 'GAMA001', 9),
+('S12_3380', '1968 Dodge Charger', '50.50 x 15.80 x 20.80', 'Dodge Charger model', 9123, 75.16, 58.86, 'GAMA001', 10),
+('S12_3891', '1969 Ford Falcon', '83.80 x 32.80 x 32.80', 'Ford Falcon model', 1049, 83.05, 58.15, 'GAMA001', 1),
+('S12_3990', '1970 Plymouth Hemi Cuda', '49.20 x 25.60 x 10.60', 'Hemi Cuda model', 5663, 31.92, 14.63,'GAMA001', 2),
+('S12_4675', '1969 Dodge Charger', '58.20 x 51.90 x 22.00', 'Dodge Charger model', 7323, 58.73, 50.51, 'GAMA001', 3),
+('S18_1129', '1993 Mazda RX-7', '83.10 x 32.80 x 36.40', 'Mazda RX-7 model', 3989, 83.51, 15.96,'GAMA001', 4),
+('S18_1342', '1937 Lincoln Berline', '91.50 x 34.20 x 14.50', 'Lincoln Berline model', 8693, 60.62, 23.91, 'GAMA001', 5),
+('S18_1367', '1936 Mercedes-Benz 500K Special Roadster', '29.80 x 92.30 x 18.00', 'Special Roadster model', 8635, 24.26, 14.88, 'GAMA001', 6),
+('S18_1589', '1965 Aston Martin DB5', '65.00 x 54.90 x 22.00', 'Aston Martin DB5 model', 9042, 65.96, 35.23, 'GAMA001', 7),
+('S18_1662', '1980s Black Hawk Helicopter', '10.15 x 52.15 x 16.15', 'Black Hawk Helicopter model', 5330, 77.27, 63.08,'GAMA001', 8),
+('S18_1749', '1917 Grand Touring Sedan', '76.00 x 22.30 x 29.30', 'Grand Touring Sedan model', 2724, 86.70, 61.72, 'GAMA001', 9),
+('S18_1889', '1948 Porsche 356-A Roadster', '34.10 x 50.50 x 18.30', 'Porsche Roadster model', 8826, 53.90, 77.00, 'GAMA001', 10),
+('S18_1984', '1995 Honda Civic', '77.00 x 49.00 x 24.80', 'Honda Civic model', 9772, 93.89, 41.32, 'GAMA001', 1),
+('S18_2238', '1998 Chrysler Plymouth Prowler', '33.20 x 36.20 x 17.80', 'Plymouth Prowler model', 8635, 101.51, 76.64, 'GAMA001', 2),
+('S18_2248', '1911 Ford Town Car', '76.00 x 34.80 x 23.20', 'Ford Town Car model', 540, 33.30, 23.00, 'GAMA001', 3),
+('S18_2319', '1964 Mercedes Tour Bus', '11.40 x 46.00 x 29.00', 'Mercedes Tour Bus model', 8258, 74.86, 61.02,'GAMA001', 4),
+('S18_2325', '1932 Model A Ford J-Coupe', '58.00 x 22.00 x 48.00', 'Model A Ford model', 9354, 127.13, 88.51, 'GAMA001', 5),
+('S18_2432', '1926 Ford Fire Engine', '24.00 x 60.00 x 29.00', 'Ford Fire Engine model', 2018, 60.77, 24.36, 'GAMA001', 6),
+('S18_2581', 'P-51-D Mustang', '49.60 x 14.90 x 23.70', 'P-51-D Mustang model', 9925, 84.48, 42.07, 'GAMA001', 7),
+('S18_2625', '1936 Harley Davidson El Knucklehead', '55.30 x 21.90 x 24.80', 'Harley Davidson model', 4357, 60.57, 24.23, 'GAMA001', 8),
+('S18_2795', '1928 Mercedes-Benz SSK', '73.80 x 35.60 x 33.80', 'Mercedes-Benz SSK model', 548, 72.56, 47.98, 'GAMA001', 9),
+('S18_2870', '1999 Indy 500 Monte Carlo SS', '50.60 x 24.80 x 17.30', 'Indy 500 model', 8164, 56.76, 46.86, 'GAMA001', 10),
+('S18_2949', '1913 Ford Model T Speedster', '99.60 x 22.60 x 16.80', 'Ford Model T model', 4189, 60.78, 48.23, 'GAMA001', 1),
+('S18_2957', '1934 Ford V8 Coupe', '50.70 x 32.80 x 17.60', 'Ford V8 Coupe model', 5649, 34.35, 15.91, 'GAMA001', 2),
+('S18_3029', '1999 Yamaha Speed Boat', '38.00 x 56.00 x 15.00', 'Yamaha Speed Boat model', 4259, 51.61, 44.49, 'GAMA001', 3),
+('S18_3140', '1903 Ford Model A', '79.80 x 31.80 x 29.00', 'Ford Model A model', 3913, 68.30, 36.75, 'GAMA001', 4);
 
 
 
