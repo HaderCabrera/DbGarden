@@ -29,8 +29,6 @@ CREATE TABLE gama_producto (
     CONSTRAINT PK_codigo_gama PRIMARY KEY (codigo_gama)
 );
 
-drop table producto;
-drop table detalle_pedido;
 
 CREATE TABLE producto (
     codigo_producto VARCHAR(15),
@@ -102,7 +100,6 @@ CREATE TABLE empleado (
 );
 
 
-
 CREATE TABLE cliente (
     codigo_cliente INT(11),
     nombre_cliente VARCHAR(50) NOT NULL,
@@ -116,13 +113,6 @@ CREATE TABLE cliente (
     CONSTRAINT FK_cliente_direccion FOREIGN KEY (direccion) REFERENCES infoDireccion(codigo_direccion),
     CONSTRAINT FK_cliente_empleado FOREIGN KEY (codigo_empleado_rep_ventas) REFERENCES empleado(codigo_empleado)
 );
-
-
-    SELECT CC.nombre_cliente AS Cliente, CONCAT(E.nombre, ' ', E.apellido1  , ' ', E.apellido2) AS 'Vendedor', O.codigo_oficina AS Oficina, C.nombre_ciudad AS Ciudad 
-    FROM empleado AS E 
-    INNER JOIN cliente AS CC ON E.codigo_empleado = CC.codigo_empleado_rep_ventas 
-    INNER JOIN oficina AS O ON E.codigo_oficina = O.codigo_oficina
-    INNER JOIN ciudad AS C ON O.ciudad = C.codigo_ciudad;
 
 
 CREATE TABLE contactoCliente (
@@ -164,8 +154,6 @@ CREATE TABLE detalle_pedido (
     cantidad INT(11) NOT NULL,
     precio_unidad DECIMAL(15,2) NOT NULL,
     numero_linea SMALLINT(6) NOT NULL,
-    estado INT,
-    cliente INT,
     CONSTRAINT PK_factura_productoo PRIMARY KEY (producto,pedido),
     CONSTRAINT FK_factura_producto FOREIGN KEY (producto) REFERENCES producto(codigo_producto), 
     CONSTRAINT FK_factura_pedido FOREIGN KEY (pedido) REFERENCES pedido(codigo_pedido) 
@@ -180,153 +168,6 @@ CREATE TABLE telefono (
     CONSTRAINT FK_telefono_cliente FOREIGN KEY (cliente) REFERENCES cliente(codigo_cliente), 
     CONSTRAINT FK_telefono_oficina FOREIGN KEY (oficina) REFERENCES oficina(codigo_oficina) 
 );
-
-YA INSERTE EN REGION/PAIS/CIUDAD, INFODIRECCION, OFICINA, PUESTO, CLIENTE, TELEFONO, 
-
-
-SELECT O.codigo_oficina as oficina, C.nombre_ciudad as ciudad 
-FROM oficina AS O
-INNER JOIN ciudad as C ON C.codigo_ciudad = O.ciudad;
-
---
-
-SELECT  DISTINCT C.nombre_ciudad
-FROM pais as P
-JOIN region as R ON P.codigo_pais = R.pais
-JOIN ciudad as C ON  R.pais = C.region
-JOIN oficina as O ON C.codigo_ciudad = O.ciudad
-WHERE P.nombre_pais = 'España';
-
---
-
-SELECT
-    T.oficina as Oficina ,T.telefono as Telefono
-FROM
-    telefono AS T
-WHERE
-    T.oficina IN (SELECT  DISTINCT O.codigo_oficina
-FROM pais as P
-JOIN region as R ON P.codigo_pais = R.pais
-JOIN ciudad as C ON  R.pais = C.region
-JOIN oficina as O ON C.codigo_ciudad = O.ciudad
-WHERE P.nombre_pais = 'España');
-
---
-
-SELECT  CONCAT(E.nombre, ' ', E.apellido1 , ' ', E.apellido2) AS Nombre, E.email as Correo
-FROM empleado as E
-WHERE E.codigo_jefe = 7;
-
---
-
-SELECT P.puesto as Cargo, CONCAT(E.nombre, ' ', E.apellido1 , ' ', E.apellido2) AS Nombre, E.email as Correo
-FROM empleado as E
-INNER JOIN puesto as P ON E.puesto = P.codigo_puesto
-WHERE P.codigo_puesto = 5;
-
---
-
-SELECT CONCAT(E.nombre, ' ', E.apellido1 , ' ', E.apellido2) AS Nombre, P.puesto as Cargo
-FROM empleado as E
-INNER JOIN puesto as P ON E.puesto = P.codigo_puesto
-WHERE E.puesto <> 2;
-
---
-
-SELECT  CC.nombre_cliente as Cliente
-FROM pais as P
-JOIN region as R ON P.codigo_pais = R.pais
-JOIN ciudad as C ON  R.pais = C.region
-JOIN cliente as CC ON C.codigo_ciudad = CC.ciudad
-WHERE P.nombre_pais = 'España';
-
---
-SELECT DISTINCT P.cliente as Cliente
-FROM pago as P
-WHERE YEAR(P.fecha_pago) = '2008';
-
--- 
-
-SELECT P.codigo_pedido as codePedido, P.cliente as codeCliente, P.fecha_esperada as fechaEsperada, P.fecha_entrega as fechaEntrega
-FROM pedido as P
-WHERE P.fecha_entrega > P.fecha_esperada;
-
---
-
-SELECT P.codigo_pedido as codePedido, P.cliente as codeCliente, P.fecha_esperada as fechaEsperada, P.fecha_entrega as fechaEntrega, ADDDATE(P.fecha_entrega, INTERVAL 2 DAY) as modificada
-FROM pedido as P
-WHERE ADDDATE(P.fecha_esperada, INTERVAL 2 DAY) <= P.fecha_entrega;
-
---
-
-SELECT P.codigo_pedido as codePedido, P.cliente as codeCliente, P.fecha_esperada as fechaEsperada, P.fecha_entrega as fechaEntrega
-FROM pedido as P
-WHERE DATE_FORMAT(P.fecha_entrega, '%m')= 01;
-
---
-
-SELECT *
-FROM pago as PP
-WHERE SUBSTRING_INDEX(PP.fecha_pago, '-', 1) = 2008 AND PP.forma_pago = 'Paypal'
-ORDER BY PP.total desc;
-
---
-
-SELECT DISTINCT P.forma_pago AS 'Forma de pago'
-FROM pago as P;
-
---
-
-SELECT P.nombre AS Producto, P.precio_venta AS Precio, GP.gama as Gama
-FROM producto AS P
-INNER JOIN gama_producto as GP ON P.gama = GP.codigo_gama
-WHERE GP.gama = 'Ornamentales'
-ORDER BY P.precio_venta desc;
-
---
-SELECT C.nombre_cliente as Cliente, CC.nombre_ciudad as Ciudad, C.codigo_empleado_rep_ventas as Representante
-FROM cliente as C
-INNER JOIN ciudad as CC ON C.ciudad = CC.codigo_ciudad
-WHERE CC.nombre_ciudad = 'Madrid' AND C.codigo_empleado_rep_ventas = 10; 
-
---
-SELECT CC.nombre_cliente as Cliente, CONCAT(E.nombre, ' ', E.apellido1 , ' ', E.apellido2) AS  'Representante de ventas'
-FROM cliente AS CC
-INNER JOIN empleado as E ON CC.codigo_empleado_rep_ventas = E.codigo_empleado;
-
---
-SELECT CC.nombre_cliente as Cliente, CONCAT(E.nombre, ' ', E.apellido1 , ' ', E.apellido2) AS  'Representante de ventas', PP.fecha_pago as Pago
-FROM cliente AS CC
-INNER JOIN empleado as E ON CC.codigo_empleado_rep_ventas = E.codigo_empleado
-LEFT JOIN pago AS PP ON CC.codigo_cliente = PP.cliente
-WHERE PP.cliente IS NULL;
-
---
-SELECT CC.nombre_cliente as Cliente, CONCAT(E.nombre, ' ', E.apellido1 , ' ', E.apellido2) AS  'Representante de ventas',
-       C.nombre_ciudad AS 'Ubicacion oficina'
-FROM cliente AS CC
-INNER JOIN empleado as E ON CC.codigo_empleado_rep_ventas = E.codigo_empleado
-LEFT JOIN pago AS PP ON CC.codigo_cliente = PP.cliente
-INNER JOIN oficina AS O ON E.codigo_oficina = O.codigo_oficina
-INNER JOIN ciudad AS C ON O.ciudad = C.codigo_ciudad
-WHERE PP.cliente IS NULL;
-
---
-SELECT CC.nombre_cliente as Cliente, O.codigo_oficina as Oficina, C.nombre_ciudad as Ciudad,
-       CONCAT(ID.linea_direccion1, ' ', ID.linea_direccion2 , ' CP:', ID.codigo_postal) AS  'Direccion oficina'
-FROM cliente AS CC
-INNER JOIN ciudad AS C ON CC.ciudad = C.codigo_ciudad
-INNER JOIN oficina AS O ON C.codigo_ciudad = O.ciudad
-INNER JOIN infoDireccion AS ID ON O.info_direccion = ID.codigo_direccion
-WHERE C.nombre_ciudad = 'Fuenlabrada';
-
---
-SELECT
-FROM cliente AS CC
-INNER JOIN 
-
--- INSERTS
-
 
 -- Inserciones para la tabla 'pais'
 INSERT INTO pais (nombre_pais) VALUES 
@@ -365,10 +206,9 @@ INSERT INTO ciudad (nombre_ciudad, region) VALUES
 ('Londres', 8),    -- Inglaterra, Reino Unido
 ('Lisboa', 9),    -- Lisboa, Portugal
 ('Ámsterdam', 10),    -- Holanda del Norte, Países Bajos
-('Sevilla', 1);   -- Andalucía, España
+('Sevilla', 1),
+('Fuenlabrada', 3);   -- Andalucía, España
 
-INSERT INTO ciudad (nombre_ciudad, region) VALUES 
-('Fuenlabrada', 3);
 
 -- Inserciones para la tabla 'infoDireccion'
 INSERT INTO infoDireccion (codigo_direccion, linea_direccion1, linea_direccion2, codigo_postal) VALUES 
@@ -440,6 +280,11 @@ INSERT INTO empleado (codigo_empleado, nombre, apellido1, apellido2, extension, 
 (14, 'Raquel', 'Torres', 'Diaz', '1014', 'raquel.torres@empresa.com', 4, 11, 'OFI014'), -- Contador, Barcelona
 (15, 'Manuel', 'Vazquez', 'Sanchez', '1015', 'manuel.vazquez@empresa.com', 3, 7, 'OFI015'); -- Recepcionista, París
 
+
+UPDATE empleado
+SET codigo_oficina = NULL
+WHERE codigo_empleado = 15;
+
 UPDATE empleado
 SET codigo_jefe = NULL, puesto = 5
 WHERE codigo_empleado = 1;
@@ -486,6 +331,20 @@ INSERT INTO cliente (codigo_cliente, nombre_cliente, fax, limite_credito, ciudad
 (19, 'Fernando Mendoza', '852369147', 160000.00, 9, 'ITA001', 14),
 (20, 'Beatriz Castillo', '258963741', 170000.00, 10, 'UK001', 12),
 (21, 'ELver Garcia', '13159872', 51234.00, 1, 'ESP001', 2);
+
+UPDATE cliente
+SET codigo_empleado_rep_ventas = 2
+WHERE codigo_cliente = 15;
+
+UPDATE cliente
+SET codigo_empleado_rep_ventas = 2
+WHERE codigo_cliente = 3;
+
+UPDATE cliente
+SET codigo_empleado_rep_ventas = 2
+WHERE codigo_cliente = 5;
+
+
 
 
 UPDATE cliente
@@ -629,42 +488,156 @@ INSERT INTO gama_producto (codigo_gama, gama, descripcion_texto, descripcion_htm
 ('GAMA005', 'Joyería', 'Piezas de joyería fina y accesorios.', '<p>Piezas de joyería fina y accesorios.</p>', 'joyeria.jpg'),
 ('GAMA006', 'Moda', 'Ropa, calzado y accesorios de moda para hombres y mujeres.', '<p>Ropa, calzado y accesorios de moda para hombres y mujeres.</p>', 'moda.jpg');
 
+UPDATE gama_producto
+SET gama = 'Frutales'
+WHERE codigo_gama = 'GAMA006';
+
 INSERT INTO producto (codigo_producto, nombre, dimensiones, descripcion, cantidad_en_stock, precio_venta, precio_proveedor, gama, proveedor)
 VALUES 
 ('S10_1678', '1969 Harley Davidson', '48.80 x 66.90 x 26.80', 'Replica motorcycle', 7933, 48.81, 31.24, 'GAMA001', 1),
 ('S10_1949', '1952 Alpine Renault', '88.60 x 25.60 x 10.90', 'Vintage car model', 7305, 98.58, 38.58, 'GAMA001', 2),
-('S10_2016', '1996 Moto Guzzi', '99.00 x 30.00 x 14.00', 'Diecast motorcycle', 6625, 68.99, 37.49, 'GAMA001', 3),
-('S10_4698', '2003 Harley-Davidson Eagle Drag Bike', '15.50 x 44.30 x 25.20', 'Drag bike model', 5582, 91.02, 37.76, 'GAMA001', 4),
-('S12_1099', '1968 Ford Mustang', '64.50 x 34.90 x 18.60', 'Classic car model', 7312, 95.34, 34.35, 'GAMA001', 5),
-('S12_1108', '2001 Ferrari Enzo', '79.20 x 39.80 x 16.20', 'Ferrari Enzo model', 3619, 95.59, 72.59, 'GAMA001', 6),
-('S12_1666', '1958 Setra Bus', '77.00 x 35.00 x 10.60', 'Vintage bus model', 1016, 77.90, 47.29, 'GAMA001', 7),
-('S12_2823', '2002 Suzuki XREO', '51.60 x 54.90 x 22.70', 'Diecast SUV', 9997, 103.42, 95.70, 'GAMA001', 8),
+('S10_2016', '1996 Moto Guzzi', '99.00 x 30.00 x 14.00', 'Diecast motorcycle', 6625, 68.99, 37.49, 'GAMA002', 3),
+('S10_4698', '2003 Harley-Davidson Eagle Drag Bike', '15.50 x 44.30 x 25.20', 'Drag bike model', 5582, 91.02, 37.76, 'GAMA003', 4),
+('S12_1099', '1968 Ford Mustang', '64.50 x 34.90 x 18.60', 'Classic car model', 7312, 95.34, 34.35, 'GAMA003', 5),
+('S12_1108', '2001 Ferrari Enzo', '79.20 x 39.80 x 16.20', 'Ferrari Enzo model', 3619, 95.59, 72.59, 'GAMA005', 6),
+('S12_1666', '1958 Setra Bus', '77.00 x 35.00 x 10.60', 'Vintage bus model', 1016, 77.90, 47.29, 'GAMA005', 7),
+('S12_2823', '2002 Suzuki XREO', '51.60 x 54.90 x 22.70', 'Diecast SUV', 9997, 103.42, 95.70, 'GAMA006', 8),
 ('S12_3148', '1969 Corvair Monza', '67.20 x 16.30 x 32.20', 'Corvair Monza model', 6906, 89.14, 55.09, 'GAMA001', 9),
 ('S12_3380', '1968 Dodge Charger', '50.50 x 15.80 x 20.80', 'Dodge Charger model', 9123, 75.16, 58.86, 'GAMA001', 10),
 ('S12_3891', '1969 Ford Falcon', '83.80 x 32.80 x 32.80', 'Ford Falcon model', 1049, 83.05, 58.15, 'GAMA001', 1),
-('S12_3990', '1970 Plymouth Hemi Cuda', '49.20 x 25.60 x 10.60', 'Hemi Cuda model', 5663, 31.92, 14.63,'GAMA001', 2),
-('S12_4675', '1969 Dodge Charger', '58.20 x 51.90 x 22.00', 'Dodge Charger model', 7323, 58.73, 50.51, 'GAMA001', 3),
+('S12_3990', '1970 Plymouth Hemi Cuda', '49.20 x 25.60 x 10.60', 'Hemi Cuda model', 5663, 31.92, 14.63,'GAMA003', 2),
+('S12_4675', '1969 Dodge Charger', '58.20 x 51.90 x 22.00', 'Dodge Charger model', 7323, 58.73, 50.51, 'GAMA004', 3),
 ('S18_1129', '1993 Mazda RX-7', '83.10 x 32.80 x 36.40', 'Mazda RX-7 model', 3989, 83.51, 15.96,'GAMA001', 4),
-('S18_1342', '1937 Lincoln Berline', '91.50 x 34.20 x 14.50', 'Lincoln Berline model', 8693, 60.62, 23.91, 'GAMA001', 5),
-('S18_1367', '1936 Mercedes-Benz 500K Special Roadster', '29.80 x 92.30 x 18.00', 'Special Roadster model', 8635, 24.26, 14.88, 'GAMA001', 6),
+('S18_1342', '1937 Lincoln Berline', '91.50 x 34.20 x 14.50', 'Lincoln Berline model', 8693, 60.62, 23.91, 'GAMA006', 5),
+('S18_1367', '1936 Mercedes-Benz 500K Special Roadster', '29.80 x 92.30 x 18.00', 'Special Roadster model', 8635, 24.26, 14.88, 'GAMA004', 6),
 ('S18_1589', '1965 Aston Martin DB5', '65.00 x 54.90 x 22.00', 'Aston Martin DB5 model', 9042, 65.96, 35.23, 'GAMA001', 7),
-('S18_1662', '1980s Black Hawk Helicopter', '10.15 x 52.15 x 16.15', 'Black Hawk Helicopter model', 5330, 77.27, 63.08,'GAMA001', 8),
+('S18_1662', '1980s Black Hawk Helicopter', '10.15 x 52.15 x 16.15', 'Black Hawk Helicopter model', 5330, 77.27, 63.08,'GAMA004', 8),
 ('S18_1749', '1917 Grand Touring Sedan', '76.00 x 22.30 x 29.30', 'Grand Touring Sedan model', 2724, 86.70, 61.72, 'GAMA001', 9),
-('S18_1889', '1948 Porsche 356-A Roadster', '34.10 x 50.50 x 18.30', 'Porsche Roadster model', 8826, 53.90, 77.00, 'GAMA001', 10),
-('S18_1984', '1995 Honda Civic', '77.00 x 49.00 x 24.80', 'Honda Civic model', 9772, 93.89, 41.32, 'GAMA001', 1),
+('S18_1889', '1948 Porsche 356-A Roadster', '34.10 x 50.50 x 18.30', 'Porsche Roadster model', 8826, 53.90, 77.00, 'GAMA003', 10),
+('S18_1984', '1995 Honda Civic', '77.00 x 49.00 x 24.80', 'Honda Civic model', 9772, 93.89, 41.32, 'GAMA003', 1),
 ('S18_2238', '1998 Chrysler Plymouth Prowler', '33.20 x 36.20 x 17.80', 'Plymouth Prowler model', 8635, 101.51, 76.64, 'GAMA001', 2),
 ('S18_2248', '1911 Ford Town Car', '76.00 x 34.80 x 23.20', 'Ford Town Car model', 540, 33.30, 23.00, 'GAMA001', 3),
-('S18_2319', '1964 Mercedes Tour Bus', '11.40 x 46.00 x 29.00', 'Mercedes Tour Bus model', 8258, 74.86, 61.02,'GAMA001', 4),
+('S18_2319', '1964 Mercedes Tour Bus', '11.40 x 46.00 x 29.00', 'Mercedes Tour Bus model', 8258, 74.86, 61.02,'GAMA003', 4),
 ('S18_2325', '1932 Model A Ford J-Coupe', '58.00 x 22.00 x 48.00', 'Model A Ford model', 9354, 127.13, 88.51, 'GAMA001', 5),
-('S18_2432', '1926 Ford Fire Engine', '24.00 x 60.00 x 29.00', 'Ford Fire Engine model', 2018, 60.77, 24.36, 'GAMA001', 6),
-('S18_2581', 'P-51-D Mustang', '49.60 x 14.90 x 23.70', 'P-51-D Mustang model', 9925, 84.48, 42.07, 'GAMA001', 7),
+('S18_2432', '1926 Ford Fire Engine', '24.00 x 60.00 x 29.00', 'Ford Fire Engine model', 2018, 60.77, 24.36, 'GAMA002', 6),
+('S18_2581', 'P-51-D Mustang', '49.60 x 14.90 x 23.70', 'P-51-D Mustang model', 9925, 84.48, 42.07, 'GAMA004', 7),
 ('S18_2625', '1936 Harley Davidson El Knucklehead', '55.30 x 21.90 x 24.80', 'Harley Davidson model', 4357, 60.57, 24.23, 'GAMA001', 8),
-('S18_2795', '1928 Mercedes-Benz SSK', '73.80 x 35.60 x 33.80', 'Mercedes-Benz SSK model', 548, 72.56, 47.98, 'GAMA001', 9),
-('S18_2870', '1999 Indy 500 Monte Carlo SS', '50.60 x 24.80 x 17.30', 'Indy 500 model', 8164, 56.76, 46.86, 'GAMA001', 10),
-('S18_2949', '1913 Ford Model T Speedster', '99.60 x 22.60 x 16.80', 'Ford Model T model', 4189, 60.78, 48.23, 'GAMA001', 1),
-('S18_2957', '1934 Ford V8 Coupe', '50.70 x 32.80 x 17.60', 'Ford V8 Coupe model', 5649, 34.35, 15.91, 'GAMA001', 2),
+('S18_2795', '1928 Mercedes-Benz SSK', '73.80 x 35.60 x 33.80', 'Mercedes-Benz SSK model', 548, 72.56, 47.98, 'GAMA002', 9),
+('S18_2870', '1999 Indy 500 Monte Carlo SS', '50.60 x 24.80 x 17.30', 'Indy 500 model', 8164, 56.76, 46.86, 'GAMA005', 10),
+('S18_2949', '1913 Ford Model T Speedster', '99.60 x 22.60 x 16.80', 'Ford Model T model', 4189, 60.78, 48.23, 'GAMA002', 1),
+('S18_2957', '1934 Ford V8 Coupe', '50.70 x 32.80 x 17.60', 'Ford V8 Coupe model', 5649, 34.35, 15.91, 'GAMA005', 2),
 ('S18_3029', '1999 Yamaha Speed Boat', '38.00 x 56.00 x 15.00', 'Yamaha Speed Boat model', 4259, 51.61, 44.49, 'GAMA001', 3),
-('S18_3140', '1903 Ford Model A', '79.80 x 31.80 x 29.00', 'Ford Model A model', 3913, 68.30, 36.75, 'GAMA001', 4);
+('S18_3140', '1903 Ford Model A', '79.80 x 31.80 x 29.00', 'Ford Model A model', 3913, 68.30, 36.75, 'GAMA006', 4),
+('S10_0054', '1969 ASD D', '48.80 x 66.90 x 26.80', 'motorcycle', 1932, 48.81, 31.24, 'GAMA001', 1);
+
+
+
+
+INSERT INTO detalle_pedido (producto, pedido, cantidad, precio_unidad, numero_linea, estado, cliente) VALUES
+('S10_1678', 1001, 5, 10.50, 1, 1, 101),
+('S12_3891', 1001, 3, 15.75, 2, 1, 101),
+('S18_1984', 1001, 2, 20.00, 3, 1, 101),
+('S18_2949', 1002, 4, 8.99, 1, 1, 102),
+('S10_1949', 1002, 6, 12.25, 2, 1, 102),
+('S12_3990', 1003, 2, 30.00, 1, 1, 103),
+('S18_2238', 1004, 3, 18.50, 1, 1, 104),
+('S18_2957', 1004, 1, 25.00, 2, 1, 104),
+('S10_2016', 1005, 5, 11.75, 1, 1, 105),
+('S12_4675', 1005, 2, 22.50, 2, 1, 105),
+('S18_2248', 1005, 3, 17.25, 3, 1, 105),
+('S18_3029', 1006, 1, 40.00, 1, 1, 106),
+('S10_4698', 1007, 4, 9.99, 1, 1, 107),
+('S18_1129', 1007, 2, 15.00, 2, 1, 107),
+('S18_2319', 1007, 3, 20.50, 3, 1, 107),
+('S18_3140', 1008, 6, 12.75, 1, 1, 108),
+('S12_1099', 1008, 1, 28.00, 2, 1, 108),
+('S18_1342', 1009, 3, 35.00, 1, 1, 109),
+('S18_2325', 1010, 2, 17.99, 1, 1, 110),
+('S12_1108', 1010, 4, 21.25, 2, 1, 110),
+('S18_1367', 1010, 1, 29.50, 3, 1, 110),
+('S18_2432', 1011, 5, 13.75, 1, 1, 111),
+('S12_1666', 1011, 2, 24.00, 2, 1, 111),
+('S18_1589', 1012, 3, 12.50, 1, 1, 112),
+('S18_2581', 1013, 1, 15.99, 1, 1, 113),
+('S18_2625', 1013, 4, 19.00, 2, 1, 113),
+('S12_2823', 1013, 2, 26.50, 3, 1, 113),
+('S18_1662', 1014, 3, 14.75, 1, 1, 114),
+('S18_2795', 1015, 5, 18.00, 1, 1, 115),
+('S12_3148', 1016, 2, 30.99, 1, 1, 116),
+('S18_1749', 1016, 3, 25.25, 2, 1, 116),
+('S12_3380', 1017, 4, 11.50, 1, 1, 117),
+('S18_1889', 1017, 1, 32.00, 2, 1, 117),
+('S18_2870', 1018, 2, 16.00, 1, 1, 118),
+('S18_1984', 1019, 3, 20.99, 1, 1, 119),
+('S18_1342', 1019, 5, 15.25, 2, 1, 119),
+('S12_2823', 1020, 1, 10.50, 1, 1, 120),
+('S18_1589', 1021, 4, 27.00, 1, 1, 121),
+('S18_2581', 1021, 2, 18.75, 2, 1, 121),
+('S18_2625', 1021, 3, 21.50, 3, 1, 121),
+('S12_3148', 1022, 5, 14.25, 1, 1, 122),
+('S18_1749', 1022, 2, 26.00, 2, 1, 122),
+('S18_1662', 1023, 3, 22.50, 1, 1, 123),
+('S18_2795', 1024, 1, 11.99, 1, 1, 124),
+('S12_3380', 1024, 4, 17.00, 2, 1, 124),
+('S18_1889', 1024, 2, 23.50, 3, 1, 124),
+('S18_2870', 1025, 3, 13.75, 1, 1, 125),
+('S18_1984', 1025, 5, 19.00, 2, 1, 125),
+('S12_2823', 1026, 1, 12.50, 1, 1, 126),
+('S18_1589', 1026, 2, 31.99, 2, 1, 126);
+
+
+INSERT INTO detalle_pedido (producto, pedido, cantidad, precio_unidad, numero_linea) VALUES
+('S10_1678', 6, 5, 10.50, 1),
+('S12_3891', 8, 3, 15.75, 2),
+('S18_1984', 12, 2, 20.00, 3),
+('S18_2949', 14, 4, 8.99, 1),
+('S10_1949', 16, 6, 12.25, 2),
+('S12_3990', 18, 2, 30.00, 1),
+('S18_2238', 20, 3, 18.50, 1),
+('S18_2957', 22, 1, 25.00, 2),
+('S10_2016', 7, 5, 11.75, 1),
+('S12_4675', 9, 2, 22.50, 2),
+('S18_2248', 15, 3, 17.25, 3),
+('S18_3029', 24, 1, 40.00, 1),
+('S10_4698', 1, 4, 9.99, 1),
+('S18_1129', 3, 2, 15.00, 2),
+('S18_2319', 5, 3, 20.50, 3),
+('S18_3140', 10, 6, 12.75, 1),
+('S12_1099', 11, 1, 28.00, 2),
+('S18_1342', 13, 3, 35.00, 1),
+('S18_2325', 17, 2, 17.99, 1),
+('S12_1108', 19, 4, 21.25, 2),
+('S18_1367', 21, 1, 29.50, 3),
+('S18_2432', 23, 5, 13.75, 1),
+('S12_1666', 2, 2, 24.00, 2),
+('S18_1589', 4, 3, 12.50, 1),
+('S18_2581', 16, 1, 15.99, 1),
+('S18_2625', 18, 4, 19.00, 2),
+('S12_2823', 20, 2, 26.50, 3),
+('S18_1662', 22, 3, 14.75, 1),
+('S18_2795', 8, 5, 18.00, 1),
+('S12_3148', 10, 2, 30.99, 1),
+('S18_1749', 12, 3, 25.25, 2),
+('S12_3380', 14, 4, 11.50, 1),
+('S18_1889', 16, 1, 32.00, 2),
+('S18_2870', 18, 2, 16.00, 1),
+('S18_1984', 20, 3, 20.99, 1),
+('S18_1342', 7, 5, 15.25, 2),
+('S12_2823', 9, 1, 10.50, 1),
+('S18_1589', 15, 4, 27.00, 1),
+('S18_2581', 24, 2, 18.75, 2),
+('S18_2625', 1, 3, 21.50, 3),
+('S12_3148', 3, 5, 14.25, 1),
+('S18_1749', 5, 2, 26.00, 2),
+('S18_1662', 10, 3, 22.50, 1),
+('S18_2795', 11, 1, 11.99, 1),
+('S12_3380', 13, 4, 17.00, 2),
+('S18_1889', 17, 2, 23.50, 3),
+('S18_2870', 19, 3, 13.75, 1),
+('S18_1984', 21, 5, 19.00, 2),
+('S12_2823', 23, 1, 12.50, 1),
+('S18_1589', 2, 2, 31.99, 2);
+
 
 
 
