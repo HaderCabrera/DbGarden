@@ -359,7 +359,7 @@ realizado ningún pedido.
 1. Devuelve un listado que muestre los clientes que no han realizado ningún
 pago y los que no han realizado ningún pedido.
 
-    ``` 
+    ```SQL 
         SELECT C.nombre_cliente, PD.codigo_pedido, P.id_transaccion AS Pedido
         FROM cliente AS C
         LEFT JOIN pedido AS PD ON C.codigo_cliente = PD.cliente
@@ -371,7 +371,7 @@ pago y los que no han realizado ningún pedido.
 1. Devuelve un listado que muestre solamente los empleados que no tienen
 una oficina asociada.
 
-    ```
+    ```SQL
         SELECT EP.nombre AS 'Empleado sin Oficina', O.codigo_oficina AS oficina
         FROM empleado AS EP
         LEFT JOIN oficina AS O ON EP.codigo_oficina = O.codigo_oficina
@@ -380,7 +380,8 @@ una oficina asociada.
     ![](./imagenes/32.png)
 
 1. Devuelve un listado que muestre solamente los empleados que no tienen un cliente asociado.
-    ```
+
+    ```SQL
         SELECT EP.nombre AS 'Empleado sin clientes', C.nombre_cliente AS Cliente
         FROM empleado AS EP
         LEFT JOIN cliente AS C ON EP.codigo_empleado = C.codigo_empleado_rep_ventas
@@ -390,7 +391,8 @@ una oficina asociada.
 
 1. Devuelve un listado que muestre solamente los empleados que no tienen un
 cliente asociado junto con los datos de la oficina donde trabajan.
-    ```
+
+    ```SQL
         SELECT EP.nombre AS 'Empleado sin clientes', C.nombre_cliente AS Cliente, O.codigo_oficina AS Oficina, O.ciudad AS Ciudad, CONCAT(D.linea_direccion1, ' ', D.linea_direccion2, ' ', D.codigo_postal) AS Direccion
         FROM empleado AS EP
         LEFT JOIN cliente AS C ON EP.codigo_empleado = C.codigo_empleado_rep_ventas
@@ -403,7 +405,7 @@ cliente asociado junto con los datos de la oficina donde trabajan.
 1. Devuelve un listado que muestre los empleados que no tienen una oficina
 asociada y los que no tienen un cliente asociado.
 
-    ```
+    ```SQL
         SELECT EP.nombre AS 'Empleado sin clientes', C.nombre_cliente AS Cliente, EP.codigo_oficina AS oficina
         FROM empleado AS EP
         LEFT JOIN cliente AS C ON EP.codigo_empleado = C.codigo_empleado_rep_ventas
@@ -414,7 +416,7 @@ asociada y los que no tienen un cliente asociado.
 
 1. Devuelve un listado de los productos que nunca han aparecido en un
 pedido.
-    ```
+    ```SQL
         SELECT PD.nombre AS Producto
         FROM producto AS PD
         LEFT JOIN detalle_pedido AS DP ON PD.codigo_producto = DP.producto
@@ -426,7 +428,7 @@ pedido.
 pedido. El resultado debe mostrar el nombre, la descripción y la imagen del
 producto.
 
-    ```
+    ```SQL
         SELECT PD.nombre AS Producto, PD.descripcion AS Descripcion, GP.imagen AS Imagen 
         FROM producto AS PD
         LEFT JOIN detalle_pedido AS DP ON PD.codigo_producto = DP.producto
@@ -439,7 +441,7 @@ producto.
 hayan sido los representantes de ventas de algún cliente que haya realizado
 la compra de algún producto de la gama Frutales.
 
-    ```
+    ```SQL
         SELECT DISTINCT O.codigo_oficina AS Oficina
         FROM cliente AS CC
         INNER JOIN empleado AS EE ON CC.codigo_empleado_rep_ventas = EE.codigo_empleado
